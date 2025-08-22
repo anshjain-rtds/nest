@@ -1,4 +1,10 @@
+/* eslint-disable prettier/prettier */
+
+import { IsNotEmpty } from 'class-validator';
 export class CreateTaskDto {
-  title: string;
-  description: string;
+    @IsNotEmpty()
+    title: string;
+
+    @IsNotEmpty()
+    description: string;
 }
