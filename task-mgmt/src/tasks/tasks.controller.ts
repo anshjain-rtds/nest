@@ -1,13 +1,14 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller,Delete,Get,Param,Patch,Post, Query } from '@nestjs/common';
+import { Body, Controller,Delete,Get,Param,Patch,Post, Query, UseGuards } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import * as taskModel from './task.model';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 import { Task } from './task.entity';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('tasks')
+@UseGuards(AuthGuard())
 export class TasksController {
   constructor(private tasksService: TasksService) {}
   
@@ -32,7 +33,6 @@ export class TasksController {
   @Delete("/:id")
   deleteTask(@Param('id') id:string) : Promise<void>{
    return this.tasksService.deleteTask(id);
-    // console.log()
   }
 
   @Patch('/:id/status')
