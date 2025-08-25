@@ -1,3 +1,5 @@
 node_modules
 .DS_Store
 .env
+task-mgmt/.env.stage.dev
+task-mgmt/.env.stage.prod

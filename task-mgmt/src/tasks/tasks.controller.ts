@@ -19,12 +19,18 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
     private logger = new Logger('TasksController');
-    constructor(private tasksService: TasksService) {}
+    constructor(
+        private tasksService: TasksService,
+        private configService: ConfigService,
+    ) {
+        console.log(configService.get('PORT'));
+    }
 
     @Get()
     getTasks(
@@ -47,7 +53,9 @@ export class TasksController {
         @Body() createTaskDto: CreateTaskDto,
         @GetUser() user: User,
     ): Promise<Task> {
-      this.logger.verbose(`User "${user.username}" creating a new task. Data: ${JSON.stringify(createTaskDto)}`)
+        this.logger.verbose(
+            `User "${user.username}" creating a new task. Data: ${JSON.stringify(createTaskDto)}`,
+        );
         return this.tasksService.createTask(createTaskDto, user);
     }
 
