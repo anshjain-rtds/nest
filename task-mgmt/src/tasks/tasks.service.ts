@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+} from '@nestjs/common';
 // import { Task } from './task.model';
 // import {v4 as uuid} from 'uuid'
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -10,9 +14,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/auth/user.entity';
-
+import { Logger } from '@nestjs/common';
+import { stringToBytes } from 'node_modules/uuid/dist/cjs/v35';
 @Injectable()
 export class TasksService {
+    private logger = new Logger('TasksService');
     constructor(
         @InjectRepository(Task)
         private tasksRepository: Repository<Task>,
@@ -32,8 +38,15 @@ export class TasksService {
                 { search: `%${search}%` },
             );
         }
-        const tasks = await query.getMany();
-        return tasks;
+        try {
+            const tasks = await query.getMany();
+            return tasks;
+        } catch (error) {
+            this.logger.error(
+                `failed to get tasks for user "${user.username}". Filters: ${JSON.stringify(filterDto)}`,error.stack
+            );
+            throw new InternalServerErrorException();
+        }
     }
 
     async getTaskById(id: string, user: User): Promise<Task> {
