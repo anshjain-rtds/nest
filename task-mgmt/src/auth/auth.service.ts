@@ -1,62 +1,36 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 /* eslint-disable prettier/prettier */
-import {
-    ConflictException,
-    Injectable,
-    InternalServerErrorException,
-    UnauthorizedException,
-} from '@nestjs/common';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { Repository } from 'typeorm';
-import { User } from './user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { JwtPayload } from './jwt-payload.interface';
+import { UserRepository } from './users.repository';
+import { User } from './user.entity';
+
 @Injectable()
 export class AuthService {
-    constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
-        private jwtService: JwtService,
-    ) {}
+  constructor(
+    private readonly usersRepository: UserRepository,
+    private readonly jwtService: JwtService,
+  ) {}
 
-    async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-        const { username, password } = authCredentialsDto;
-        //hash
-        const salt = await bcrypt.genSalt();
-        // console.log(salt)
-        const hashedPassword = await bcrypt.hash(password, salt);
-        // console.log(hashedPassword)
-        const user = this.userRepository.create({
-            username,
-            password: hashedPassword,
-        });
+  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+    await this.usersRepository.createUser(authCredentialsDto);
+  }
 
-        try {
-            await this.userRepository.save(user);
-        } catch (error) {
-            if (error.code === '23505') {
-                //duplicate username
-                throw new ConflictException('username already exist');
-            } else {
-                throw new InternalServerErrorException();
-            }
-        }
-        await this.userRepository.save(user);
+  async signIn(
+    authCredentialsDto: AuthCredentialsDto,
+  ): Promise<{ accessToken: string }> {
+    const { username, password } = authCredentialsDto;
+    const user: User | null = await this.usersRepository.findByUsername(username);
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const payload: JwtPayload = { username };
+      const accessToken: string = await this.jwtService.sign(payload);
+      return { accessToken };
+    } else {
+      throw new UnauthorizedException('please check your login details');
     }
-
-    async signIn(
-        authCredentialsDto: AuthCredentialsDto,
-    ): Promise<{ accessToken: string }> {
-        const { username, password } = authCredentialsDto;
-        const user = await this.userRepository.findOne({ where: { username } });
-
-        if (user && (await bcrypt.compare(password, user.password))) {
-            const payload: JwtPayload = { username };
-            const accessToken: string = await this.jwtService.sign(payload);
-            return { accessToken };
-        } else {
-            throw new UnauthorizedException('please check your login details');
-        }
-    }
+  }
 }

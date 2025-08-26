@@ -7,6 +7,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import * as dotenv from 'dotenv';
+import { UserRepository } from './users.repository';
 
 // Load environment variables
 dotenv.config();
@@ -22,7 +23,7 @@ dotenv.config();
         }),
         TypeOrmModule.forFeature([User]),
     ],
-    providers: [AuthService, JwtStrategy],
+    providers: [AuthService, JwtStrategy, UserRepository],
     controllers: [AuthController],
     exports: [JwtStrategy, PassportModule],
 })
