@@ -7,12 +7,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LessonModule } from './lesson/lesson.module';
 import { Lesson } from './lesson/lesson.entity';
-
+import { StudentModule } from './student/student.module';
+import { Student } from './student/student-entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,  
+      isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -21,7 +22,7 @@ import { Lesson } from './lesson/lesson.entity';
         type: 'mongodb',
         url: configService.get<string>('MONGO_URI'),
         synchronize: true,
-        entities: [Lesson],
+        entities: [Lesson, Student],
       }),
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -29,6 +30,7 @@ import { Lesson } from './lesson/lesson.entity';
       driver: ApolloDriver,
     }),
     LessonModule,
+    StudentModule,
   ],
   controllers: [],
   providers: [],
