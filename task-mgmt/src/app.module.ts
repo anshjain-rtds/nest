@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 import { configValidation } from './config.schema';
+import { AppController } from './app.controller';
 
 // Load environment variables
 dotenv.config();
@@ -26,5 +27,6 @@ dotenv.config();
         }),
         AuthModule,
     ],
+    controllers: [AppController]
 })
 export class AppModule {}

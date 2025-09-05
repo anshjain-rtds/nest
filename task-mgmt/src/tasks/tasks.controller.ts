@@ -29,7 +29,7 @@ export class TasksController {
         private tasksService: TasksService,
         private configService: ConfigService,
     ) {
-        console.log(configService.get('PORT'));
+        // console.log(configService.get('PORT'));
     }
 
     @Get()
